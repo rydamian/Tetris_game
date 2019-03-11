@@ -5,10 +5,8 @@
 #include "Block.h"
 #include <iostream>
 
-//reaction time in ms - for movement
-constexpr int REACT_TIME{ 150 };
 
-//class for complex pieces (made from blocks)
+//class for complex pieces (piece made from blocks)
 class Piece : public sf::Transformable, public sf::Drawable
 {
 public:
@@ -28,6 +26,45 @@ public:
 		}
 
 		this->setOrigin(center_point);
+		name = "Unknown name";
+	}
+
+	//-----------------------------------------------------------------------------------------------------
+	//// set new origin point without change of position on screen - currently not in use so in comments
+
+	//void set_new_origin(sf::Vector2f center_point) 
+	//{
+	//	//sf::Transform transf = this->getTransform();
+	//	//sf::Vector2f original_origin = transf.transformPoint(this->getOrigin());	// transform current origin point of piece into global (window) coordinates
+	//	//sf::Vector2f center_global = transf.transformPoint(center_point);			// transform new origin point of piece into global (window) coordinates
+
+	//	this->setOrigin(center_point);
+
+	//			//Console check:
+	//			//center_point = transf.transformPoint(this->getOrigin());
+
+	//			//sf::Vector2f m = (center_point - original_origin);
+	//			//std::cout << "move " << m.x << " " << m.y << std::endl;
+
+	//	//this->move(center_global - original_origin);
+	//}
+
+
+	//-----------------------------------------------------------------------------------------------------
+	// collision check with bound in global coordinates
+	bool check_piece_collision(sf::FloatRect bound)
+	{
+		for (auto block : piece_blocks)  // check collision with every single block
+		{
+			sf::Transform transf = this->getTransform();
+			sf::Vector2f glob_coords = transf.transformPoint(block.getPosition()); //transform origin point of block into global (window) coordinates
+
+			sf::FloatRect block_bounds = block.getGB(glob_coords,this->getRotation());
+			
+			if (block_bounds.intersects(bound)) return true;
+		}
+
+		return false;
 	}
 
 	//-----------------------------------------------------------------------------------------------------
@@ -35,64 +72,42 @@ public:
 
 	void rotateRight()
 	{
-		sf::Time elapsed;
-		elapsed = clock_rotate.getElapsedTime();
+		this->rotate(90);
+	}
 
-		if (elapsed.asMilliseconds() >= REACT_TIME)
-		{
-			this->rotate(90);
-			clock_rotate.restart();
-		}
+	void rotateLeft()
+	{
+		this->rotate(-90);
 	}
 
 	void moveLeft()
 	{
-		sf::Time elapsed;
-		elapsed = clock_move_Hor.getElapsedTime();
-
-		if (elapsed.asMilliseconds() >= REACT_TIME)
-		{
-			this->move(sf::Vector2f(-BLOCK_SIZE, 0));
-			clock_move_Hor.restart();
-		}
+		this->move(sf::Vector2f(-BLOCK_SIZE, 0));
 	}
 
 	void moveRight()
 	{
-		sf::Time elapsed;
-		elapsed = clock_move_Hor.getElapsedTime();
-
-		if (elapsed.asMilliseconds() >= REACT_TIME)
-		{
-			this->move(sf::Vector2f(BLOCK_SIZE, 0));
-			clock_move_Hor.restart();
-		}
+		this->move(sf::Vector2f(BLOCK_SIZE, 0));
 	}
 
 	void moveDown()
 	{
-		sf::Time elapsed;
-		elapsed = clock_move_Ver.getElapsedTime();
-
-		if (elapsed.asMilliseconds() >= 15)
-		{
-			this->move(sf::Vector2f(0, BLOCK_SIZE));
-			clock_move_Ver.restart();
-		}
+		this->move(sf::Vector2f(0, BLOCK_SIZE));
 	}
 
 	//-----------------------------------------------------------------------------------------------------
 
-private:
+	std::string get_name()
+	{
+		return name;
+	}
 
+protected:
+	std::string name;
+
+private:
 	// vector with single Blocks
 	std::vector<Block> piece_blocks;
-
-
-	// transformation clocks (one for every type of transformation - to make for example rotation and horizontal move at once) - control of movement speed
-	sf::Clock clock_move_Hor;
-	sf::Clock clock_move_Ver;
-	sf::Clock clock_rotate;
 
 	// virtual method from Drawable class (drawing on window)
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -105,6 +120,4 @@ private:
 			target.draw(piece_blocks[i], states);
 		}
 	}
-
-
 };
