@@ -8,6 +8,7 @@
 #include "Block.h"
 #include "Piece.h"
 #include "GamePieces.h"
+#include "Board.h"
 
 
 //reaction time in ms - for player moves
@@ -24,18 +25,20 @@ std::unique_ptr<Piece> random_piece();
 
 int main()
 {
+	srand(time(NULL)); // seed for random piece generator (random_piece function)
 
 	sf::RenderWindow game_window(sf::VideoMode(800, 600, 32), "Tetris v.1.0", sf::Style::Titlebar | sf::Style::Close);
 	sf::Event event;
 
 	
-	if (!block_texture.loadFromFile("iceblock.jpg"))	// Load before unique_ptr definition!
+	if (!block_texture.loadFromFile("iceblock.jpg"))	// Load before unique_ptr current_piece definition!
 	{
 		std::cerr << "Falied to load texture";
 	}
 
 
 	std::unique_ptr<Piece> current_piece = random_piece();
+	Board game_board;
 
 	
 	// clocks ----------------------------------------------------------------------
@@ -50,14 +53,17 @@ int main()
 
 	sf::RectangleShape right_edge(sf::Vector2f(5, 600));
 	sf::RectangleShape left_edge(sf::Vector2f(20, 600));
+	sf::RectangleShape bottom_edge(sf::Vector2f(320, 20));
 
 	right_edge.setFillColor(sf::Color::Yellow);
 
 	left_edge.setPosition(-BLOCK_SIZE - 1 , 0); // -1 - safety margin for inaccurate transformation
-	right_edge.setPosition(BLOCK_SIZE *16 + 1, 0);// +1 - safety margin for inaccurate transformation
+	right_edge.setPosition(BLOCK_SIZE * 16 + 1, 0); // +1 - safety margin for inaccurate transformation
+	bottom_edge.setPosition(0, BLOCK_SIZE * 30 + 1); // +1 - safety margin for inaccurate transformation
 	
 	sf::FloatRect right_bound = right_edge.getGlobalBounds();
 	sf::FloatRect left_bound = left_edge.getGlobalBounds();
+	sf::FloatRect bottom_bound = bottom_edge.getGlobalBounds();
 
 	// game loop ----------------------------------------------------------------------
 
@@ -65,6 +71,7 @@ int main()
 	{
 		game_window.clear(sf::Color::Black);
 		game_window.draw(right_edge);
+		game_window.draw(game_board);
 
 		while(game_window.pollEvent(event))
 		{
@@ -176,11 +183,20 @@ int main()
 
 			if (elapsed.asMilliseconds() >= 15)
 			{
-				current_piece->moveDown();
+				current_piece->moveDown(); 
+				if (current_piece->check_piece_collision(bottom_bound)) // check collision
+				{
+					current_piece->moveUp();															// if collision - return to base state (before player move action)
+					std::vector<sf::Vector2f> block_coords = current_piece->get_global_block_coords();	// get global coords of every block in piece
+					for (auto single_block_coords : block_coords)										// push blocks into board
+					{
+						game_board.push_block(single_block_coords, Block(block_texture, current_piece->get_color()));
+					}
+					current_piece = random_piece(); // new random piece
+				}
 				clock_move_Ver.restart();
 			}
 		}
-
 
 		// moveDown - by game itself ------------------------------------------------------------
 
@@ -188,6 +204,16 @@ int main()
 		if (static_cast<int>(elapsed.asMilliseconds()) > vertical_move_time)
 		{
 			current_piece->moveDown();
+			if (current_piece->check_piece_collision(bottom_bound)) // check collision
+			{
+				current_piece->moveUp();															// if collision - return to previous state
+				std::vector<sf::Vector2f> block_coords = current_piece->get_global_block_coords();	// get global coords of every block in piece
+				for (auto single_block_coords : block_coords)										// push blocks into board
+				{
+					game_board.push_block(single_block_coords, Block(block_texture, current_piece->get_color()));
+				}
+				current_piece = random_piece(); // new random piece
+			}
 			game_time.restart();
 		}
 
@@ -205,7 +231,7 @@ int main()
 std::unique_ptr<Piece> random_piece()
 {
 	sf::Color colors_tab[]{ sf::Color::Blue, sf::Color::Yellow, sf::Color::Green, sf::Color::Red };
-	srand(time(NULL));
+	
 	int color_nr = rand() % 4;										// random piece kolor
 	int pos_x = (rand() % 13) * BLOCK_SIZE + 2 * BLOCK_SIZE;		// random piece horizontal position (board size -> 320, range -> 40 - 280) - for 20x20 block size
 	int piece_type = rand() % 7 + 1;								// random piece_type (T,S,Z etc.)

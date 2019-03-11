@@ -27,6 +27,7 @@ public:
 
 		this->setOrigin(center_point);
 		name = "Unknown name";
+		piece_color = color;
 	}
 
 	//-----------------------------------------------------------------------------------------------------
@@ -68,6 +69,29 @@ public:
 	}
 
 	//-----------------------------------------------------------------------------------------------------
+	// returns vector of global coords of every block (for inserting into board)
+	std::vector<sf::Vector2f> get_global_block_coords()
+	{
+		std::vector<sf::Vector2f> coordinates;
+
+		for (auto block : piece_blocks)  // push every single block coordinates into vector
+		{
+			sf::Transform transf = this->getTransform();
+			sf::Vector2f glob_coords = transf.transformPoint(block.getPosition()); //transform origin point of block into global (window) coordinates
+
+			sf::FloatRect block_bounds = block.getGB(glob_coords, this->getRotation());
+
+			sf::Vector2f block_coords;
+			block_coords.x = block_bounds.left;
+			block_coords.y = block_bounds.top;
+			
+			coordinates.push_back(block_coords);
+		}
+
+		return coordinates;
+	}
+
+	//-----------------------------------------------------------------------------------------------------
 	//Transformation methods
 
 	void rotateRight()
@@ -95,6 +119,11 @@ public:
 		this->move(sf::Vector2f(0, BLOCK_SIZE));
 	}
 
+	void moveUp() // only for collisions
+	{
+		this->move(sf::Vector2f(0, -BLOCK_SIZE));
+	}
+
 	//-----------------------------------------------------------------------------------------------------
 
 	std::string get_name()
@@ -102,12 +131,21 @@ public:
 		return name;
 	}
 
+	//-----------------------------------------------------------------------------------------------------
+
+	sf::Color get_color()
+	{
+		return piece_color;
+	}
+
+	//-----------------------------------------------------------------------------------------------------
+
 protected:
 	std::string name;
 
 private:
-	// vector with single Blocks
-	std::vector<Block> piece_blocks;
+	std::vector<Block> piece_blocks; // vector with single Blocks
+	sf::Color piece_color;
 
 	// virtual method from Drawable class (drawing on window)
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
