@@ -9,6 +9,7 @@
 #include "Piece.h"
 #include "GamePieces.h"
 #include "Board.h"
+#include <Windows.h>
 
 
 //reaction time in ms - for player moves

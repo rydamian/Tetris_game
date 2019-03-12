@@ -11,14 +11,14 @@ c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\board.h(33): w
           [
               T=float
           ]
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(28): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(315): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(322): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(327): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(332): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(337): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(342): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(347): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(352): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(356): warning C4715: 'random_piece': not all control paths return a value
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(30): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(317): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(324): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(329): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(334): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(339): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(344): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(349): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(354): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(358): warning C4715: 'random_piece': not all control paths return a value
   Project1.vcxproj -> C:\Users\Damian\Desktop\cpp\ConsoleApplication3\Project1\Debug\Tetris game.exe
