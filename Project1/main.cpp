@@ -22,9 +22,10 @@ sf::Texture block_texture;
 
 //function - returns random piece (with random type, color and horizontal position)
 std::unique_ptr<Piece> random_piece();
-
+void removeConsoleWindow();
 int main()
 {
+	removeConsoleWindow();
 	srand(time(NULL)); // seed for random piece generator (random_piece function)
 
 	sf::RenderWindow game_window(sf::VideoMode(800, 600, 32), "Tetris v.1.0", sf::Style::Titlebar | sf::Style::Close);
@@ -274,4 +275,10 @@ std::unique_ptr<Piece> random_piece()
 		return p7;
 	}
 
+}
+
+void removeConsoleWindow()
+{
+	ShowWindow(FindWindowA("ConsoleWindowClass", NULL), false);
+	FreeConsole();
 }
