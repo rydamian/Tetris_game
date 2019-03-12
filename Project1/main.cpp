@@ -37,9 +37,9 @@ int main()
 	}
 
 
-	std::unique_ptr<Piece> current_piece = random_piece();
+	std::unique_ptr<Piece> current_piece = random_piece(); // first random block
 	Board game_board;
-
+	std::vector<sf::FloatRect> block_bounds; // vector for bounds of blocks on board
 	
 	// clocks ----------------------------------------------------------------------
 	
@@ -96,7 +96,8 @@ int main()
 			if (elapsed.asMilliseconds() >= REACT_TIME) // only one rotation per REACT_TIME
 			{
 				current_piece->rotateRight();
-				if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision
+
+				if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision with side edges
 				{
 					// if collision - move into new position:
 					if (current_piece->get_name() == "I-type")
@@ -137,6 +138,17 @@ int main()
 						}
 					}
 				}
+
+
+				for (auto bound : block_bounds) // check collision with other pieces on board
+				{
+					if (current_piece->check_piece_collision(bound)) // check collision
+					{
+						current_piece->rotateLeft();	// if collision - return to base state (before player move action)
+						break; // break "for" at fist collision
+					}
+				}
+
 				clock_rotate.restart();
 			}	
 		}
@@ -150,12 +162,26 @@ int main()
 			if (elapsed.asMilliseconds() >= REACT_TIME) // only one move per REACT_TIME
 			{
 				current_piece->moveRight();
-				if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision
+
+				if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision  with side edges
 				{
 					current_piece->moveLeft(); // if collision - return to base state (before player move action)
 				}
+				
+
+				for (auto bound : block_bounds) // check collision with other pieces on board
+				{
+					if (current_piece->check_piece_collision(bound)) // check collision
+					{
+						current_piece->moveLeft();	// if collision - return to base state (before player move action)
+						break; // break "for" at fist collision
+					}
+				}
+
 				clock_move_Hor.restart();
 			}
+
+			
 		}
 
 		// horizontal move - left
@@ -167,10 +193,22 @@ int main()
 			if (elapsed.asMilliseconds() >= REACT_TIME) // only one move per REACT_TIME
 			{
 				current_piece->moveLeft();
-				if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision
+
+				if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision with side edges
 				{
 					current_piece->moveRight(); // if collision - return to base state (before player move action)
 				}
+				
+
+				for (auto bound : block_bounds) // check collision  with other pieces on board
+				{
+					if (current_piece->check_piece_collision(bound)) // check collision
+					{
+						current_piece->moveRight();		// if collision - return to base state (before player move action)
+						break; // break "for" at fist collision
+					}
+				}
+
 				clock_move_Hor.restart();
 			}
 		}
@@ -181,10 +219,10 @@ int main()
 			sf::Time elapsed;
 			elapsed = clock_move_Ver.getElapsedTime();
 
-			if (elapsed.asMilliseconds() >= 15)
+			if (elapsed.asMilliseconds() >= 25)
 			{
 				current_piece->moveDown(); 
-				if (current_piece->check_piece_collision(bottom_bound)) // check collision
+				if (current_piece->check_piece_collision(bottom_bound)) // check collision with bottom bound
 				{
 					current_piece->moveUp();															// if collision - return to base state (before player move action)
 					std::vector<sf::Vector2f> block_coords = current_piece->get_global_block_coords();	// get global coords of every block in piece
@@ -192,8 +230,29 @@ int main()
 					{
 						game_board.push_block(single_block_coords, Block(block_texture, current_piece->get_color()));
 					}
+					game_board.line_clear(); // clear full lines (rows)
+					block_bounds = game_board.get_block_bounds(); // update block bounds (blocks on board)
 					current_piece = random_piece(); // new random piece
 				}
+
+				for (auto bound : block_bounds) // check collision  with other pieces
+				{
+					if (current_piece->check_piece_collision(bound)) // check collision
+					{
+						current_piece->moveUp();															// if collision - return to base state (before player move action)
+						std::vector<sf::Vector2f> block_coords = current_piece->get_global_block_coords();	// get global coords of every block in piece
+						for (auto single_block_coords : block_coords)										// push blocks into board
+						{
+							game_board.push_block(single_block_coords, Block(block_texture, current_piece->get_color()));
+						}
+						game_board.line_clear(); // clear full lines (rows) 
+						block_bounds = game_board.get_block_bounds();// update block bounds (blocks on board)
+						current_piece = random_piece(); // new random piece
+						break; // break "for" at fist collision
+					}
+				}
+				
+
 				clock_move_Ver.restart();
 			}
 		}
@@ -212,8 +271,28 @@ int main()
 				{
 					game_board.push_block(single_block_coords, Block(block_texture, current_piece->get_color()));
 				}
+				game_board.line_clear(); // clear full lines (rows)
+				block_bounds = game_board.get_block_bounds(); // update block bounds (blocks on board)
 				current_piece = random_piece(); // new random piece
 			}
+
+			for (auto bound : block_bounds) // check collision  with other pieces
+			{
+				if (current_piece->check_piece_collision(bound)) // check collision
+				{
+					current_piece->moveUp();															// if collision - return to base state (before player move action)
+					std::vector<sf::Vector2f> block_coords = current_piece->get_global_block_coords();	// get global coords of every block in piece
+					for (auto single_block_coords : block_coords)										// push blocks into board
+					{
+						game_board.push_block(single_block_coords, Block(block_texture, current_piece->get_color()));
+					}
+					game_board.line_clear(); // clear full lines (rows)
+					block_bounds = game_board.get_block_bounds(); // update block bounds (blocks on board)
+					current_piece = random_piece(); // new random piece
+					break; // break "for" at fist collision
+				}
+			}
+
 			game_time.restart();
 		}
 
@@ -233,7 +312,7 @@ std::unique_ptr<Piece> random_piece()
 	sf::Color colors_tab[]{ sf::Color::Blue, sf::Color::Yellow, sf::Color::Green, sf::Color::Red };
 	
 	int color_nr = rand() % 4;										// random piece kolor
-	int pos_x = (rand() % 13) * BLOCK_SIZE + 2 * BLOCK_SIZE;		// random piece horizontal position (board size -> 320, range -> 40 - 280) - for 20x20 block size
+	int pos_x = (rand() % 14) * BLOCK_SIZE + BLOCK_SIZE;			// random piece horizontal position (board size -> 320, range -> 20 - 280) - for 20x20 block size
 	int piece_type = rand() % 7 + 1;								// random piece_type (T,S,Z etc.)
 
 	

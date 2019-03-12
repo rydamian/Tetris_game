@@ -1,4 +1,4 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Project1.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Project1.vcxproj, Tetris_game.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   main.cpp
 c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\piece.h(156): warning C4018: '<': signed/unsigned mismatch
 c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\board.h(32): warning C4244: 'initializing': conversion from 'T' to 'int', possible loss of data
@@ -12,13 +12,13 @@ c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\board.h(33): w
               T=float
           ]
 c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(28): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(236): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(243): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(248): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(253): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(258): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(263): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(268): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(273): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(277): warning C4715: 'random_piece': not all control paths return a value
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(315): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(322): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(327): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(332): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(337): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(342): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(347): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(352): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\damian\desktop\cpp\consoleapplication3\project1\project1\main.cpp(356): warning C4715: 'random_piece': not all control paths return a value
   Project1.vcxproj -> C:\Users\Damian\Desktop\cpp\ConsoleApplication3\Project1\Debug\Tetris game.exe

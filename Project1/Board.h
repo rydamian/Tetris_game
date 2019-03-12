@@ -35,6 +35,64 @@ public:
 	}
 
 
+	// -----------------------------------------------------------------------------------------------------
+	// Returns vector of bounds (bounds of every block on board)
+	std::vector<sf::FloatRect> get_block_bounds()
+	{
+		std::vector<sf::FloatRect> bounds;
+
+		for (int i = 0; i < board_rows; i++)
+		{
+			for (int j = 0; j < board_columns; j++)
+			{
+				if (game_board[i][j])
+				{
+					sf::FloatRect block_bound;
+					block_bound = (*game_board[i][j]).getGB(((*game_board[i][j])).getPosition(), 0);
+					bounds.push_back(block_bound);
+				}
+			}
+		}
+
+		return bounds;
+	}
+
+	// -----------------------------------------------------------------------------------------------------
+	// Clear line (row) - when full of blocks
+	void line_clear()
+	{
+		for (int i = board_rows - 1; i >= 0 ; i--) // check from bottom to top - every row
+		{
+			int row_count = 0;
+			for (int j = 0; j < board_columns; j++) // check every column in row
+			{
+				if (game_board[i][j])
+				{
+					row_count++;
+				}
+			}
+
+			if (row_count == 16) // if row is full - clear row
+			{
+				for (int k = i; k >= 1; k--) // from bottom to top  - every row
+				{
+					for (int m = 0; m < board_columns; m++) // every column in row
+					{
+						game_board[k][m] = std::move(game_board[k - 1][m]); // move line one row down (std::move - because of unique_ptr)
+						if (game_board[k][m])
+						{
+							(*game_board[k][m]).move(0, BLOCK_SIZE); //change single block coordinates
+						}
+
+					}
+				}
+				i++; //check row again (this was one row up before!!)
+			}
+		}
+	}
+
+	// -----------------------------------------------------------------------------------------------------
+
 private:
 	std::vector< std::vector< std::unique_ptr<Block> > > game_board;
 	int board_rows = 30;			// 30 rows		(30 * BLOCK_SIZE = 30 * 20 = 600 - window heigth in pix)
