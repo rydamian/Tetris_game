@@ -58,9 +58,11 @@ public:
 	}
 
 	// -----------------------------------------------------------------------------------------------------
-	// Clear line (row) - when full of blocks
-	void line_clear()
+	// Clear line (row) - when full of blocks, returns number of lines cleared
+	int line_clear()
 	{
+		int how_many = 0; // how many lines cleared
+
 		for (int i = board_rows - 1; i >= 0 ; i--) // check from bottom to top - every row
 		{
 			int row_count = 0;
@@ -72,9 +74,11 @@ public:
 				}
 			}
 
-			if (row_count == 16) // if row is full - clear row
+			if (row_count == board_columns) // if row is full - clear row
 			{
-				for (int k = i; k >= 1; k--) // from bottom to top  - every row
+				how_many++;
+
+				for (int k = i; k >= 1; k--) // from bottom to top
 				{
 					for (int m = 0; m < board_columns; m++) // every column in row
 					{
@@ -89,6 +93,18 @@ public:
 				i++; //check row again (this was one row up before!!)
 			}
 		}
+		return how_many;
+	}
+
+	// -----------------------------------------------------------------------------------------------------
+	// Check if game is over
+	bool is_game_over()
+	{
+		for (int i = 0; i < board_columns; i++)
+		{
+			if (game_board[2][i]) return true; // if block in 3rd row - game is over
+		}
+		return false;
 	}
 
 	// -----------------------------------------------------------------------------------------------------
@@ -115,4 +131,3 @@ private:
 	}
 
 };
-

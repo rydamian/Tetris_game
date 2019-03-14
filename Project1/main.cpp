@@ -11,27 +11,39 @@
 #include "Board.h"
 #include <Windows.h>
 
+//window size
+constexpr int WINDOW_HEIGTH = 600;
+constexpr int WINDOW_WIDTH = 600;
 
 //reaction time in ms - for player moves
 constexpr int REACT_TIME{ 150 };
 
-//speed of vertical movement, 800ms at the begining, value lower at later phase of game
-int vertical_move_time = 800;
+//how many point for one line clear
+constexpr int POINTS_FOR_CLEAR{ 100 };
+
+//speed of vertical movement, 825ms at the begining, value lower at later phase of game (-50 ms per 30 s)
+int vertical_move_time = 825;
+constexpr int VERTICAL_MOVE_DIFF = 50;
+constexpr int SPEEDING_TIME = 30;
 
 //texture for single block
 sf::Texture block_texture;
 
 //function - returns random piece (with random type, color and horizontal position)
 std::unique_ptr<Piece> random_piece();
+
+//another functions
 void removeConsoleWindow();
+void update_score(int lines_cleared, int & points, sf::Text &scoring);
+
 int main()
 {
 	removeConsoleWindow();
 	srand(time(NULL)); // seed for random piece generator (random_piece function)
 
-	sf::RenderWindow game_window(sf::VideoMode(800, 600, 32), "Tetris v.1.0", sf::Style::Titlebar | sf::Style::Close);
+	sf::RenderWindow game_window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGTH, 32), "Tetris v.1.0", sf::Style::Titlebar | sf::Style::Close);
 	sf::Event event;
-
+	int points = 0; // game score
 	
 	if (!block_texture.loadFromFile("iceblock.jpg"))	// Load before unique_ptr current_piece definition!
 	{
@@ -46,10 +58,10 @@ int main()
 	// clocks ----------------------------------------------------------------------
 	
 	sf::Clock game_time;		// clock for moveDown (game)
+	sf::Clock game_speed;		// clock for vertical movement speed (game)
 	sf::Clock clock_move_Hor;	// clock for horizontal movement (player)
 	sf::Clock clock_move_Ver;	// clock for moveDown (player)
 	sf::Clock clock_rotate;		// clock for rotation (player)
-
 
 	// board edges -------------------------------------------------------------------
 
@@ -67,13 +79,32 @@ int main()
 	sf::FloatRect left_bound = left_edge.getGlobalBounds();
 	sf::FloatRect bottom_bound = bottom_edge.getGlobalBounds();
 
+	// Right side of window - scoring -----------------------------------------------------
+
+	sf::Font font;
+	if (!font.loadFromFile("neuropol.ttf"))
+	{
+		std::cerr << "Falied to load font";
+	}
+
+	sf::Text scoring; // number of points
+	scoring.setFont(font);
+	scoring.setString(std::to_string(points));
+	scoring.setCharacterSize(24);
+	scoring.setFillColor(sf::Color::Red);
+	scoring.setPosition(350, 75);
+
+	sf::Text score_text; // "Score:"
+	score_text = scoring;
+	score_text.setString("Score:");
+	score_text.setPosition(350, 25);
+
+
+
 	// game loop ----------------------------------------------------------------------
 
 	while (game_window.isOpen())
 	{
-		game_window.clear(sf::Color::Black);
-		game_window.draw(right_edge);
-		game_window.draw(game_board);
 
 		while(game_window.pollEvent(event))
 		{
@@ -87,152 +118,212 @@ int main()
 			}
 		}
 
-		// player actions ----------------------------------------------------------------------
-		
-		// piece rotation
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+		if (!game_board.is_game_over()) // if game is not over
 		{
-			sf::Time elapsed;
-			elapsed = clock_rotate.getElapsedTime();
+			game_window.clear(sf::Color::Black);
+			game_window.draw(right_edge);
+			game_window.draw(game_board);
+			game_window.draw(scoring);
+			game_window.draw(score_text);
+			game_window.draw(*current_piece);
 
-			if (elapsed.asMilliseconds() >= REACT_TIME) // only one rotation per REACT_TIME
+
+		// player actions ----------------------------------------------------------------------
+
+		// piece rotation
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 			{
-				current_piece->rotateRight();
+				sf::Time elapsed;
+				elapsed = clock_rotate.getElapsedTime();
 
-				if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision with side edges
+				if (elapsed.asMilliseconds() >= REACT_TIME) // only one rotation per REACT_TIME
 				{
-					// if collision - move into new position:
-					if (current_piece->get_name() == "I-type")
-					{
-						current_piece->move(2*BLOCK_SIZE, 0);
-					}
-					else
-					{
-						current_piece->move(BLOCK_SIZE, 0);
-					}
+					current_piece->rotateRight();
 
-					if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision again in new position
+					if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision with side edges
 					{
 						// if collision - move into new position:
 						if (current_piece->get_name() == "I-type")
 						{
-							current_piece->move(-4* BLOCK_SIZE, 0);
+							current_piece->move(2 * BLOCK_SIZE, 0);
 						}
 						else
 						{
-							current_piece->move(-2* BLOCK_SIZE, 0);
+							current_piece->move(BLOCK_SIZE, 0);
 						}
-						
 
 						if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision again in new position
 						{
-							// if another collision - return to base state (before player rotate action)
+							// if collision - move into new position:
 							if (current_piece->get_name() == "I-type")
 							{
-								current_piece->move(2* BLOCK_SIZE, 0);
+								current_piece->move(-4 * BLOCK_SIZE, 0);
 							}
 							else
 							{
-								current_piece->move(BLOCK_SIZE, 0);
+								current_piece->move(-2 * BLOCK_SIZE, 0);
 							}
-							
-							current_piece->rotateLeft();
+
+
+							if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision again in new position
+							{
+								// if another collision - return to base state (before player rotate action)
+								if (current_piece->get_name() == "I-type")
+								{
+									current_piece->move(2 * BLOCK_SIZE, 0);
+								}
+								else
+								{
+									current_piece->move(BLOCK_SIZE, 0);
+								}
+
+								current_piece->rotateLeft();
+							}
 						}
 					}
-				}
 
 
-				for (auto bound : block_bounds) // check collision with other pieces on board
-				{
-					if (current_piece->check_piece_collision(bound)) // check collision
+					for (auto bound : block_bounds) // check collision with other pieces on board
 					{
-						current_piece->rotateLeft();	// if collision - return to base state (before player move action)
-						break; // break "for" at fist collision
+						if (current_piece->check_piece_collision(bound)) // check collision
+						{
+							current_piece->rotateLeft();	// if collision - return to base state (before player move action)
+							break; // break "for" at fist collision
+						}
 					}
+
+					clock_rotate.restart();
 				}
-
-				clock_rotate.restart();
-			}	
-		}
-
-		// horizontal move - right
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-		{
-			sf::Time elapsed;
-			elapsed = clock_move_Hor.getElapsedTime();
-
-			if (elapsed.asMilliseconds() >= REACT_TIME) // only one move per REACT_TIME
-			{
-				current_piece->moveRight();
-
-				if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision  with side edges
-				{
-					current_piece->moveLeft(); // if collision - return to base state (before player move action)
-				}
-				
-
-				for (auto bound : block_bounds) // check collision with other pieces on board
-				{
-					if (current_piece->check_piece_collision(bound)) // check collision
-					{
-						current_piece->moveLeft();	// if collision - return to base state (before player move action)
-						break; // break "for" at fist collision
-					}
-				}
-
-				clock_move_Hor.restart();
 			}
 
-			
-		}
-
-		// horizontal move - left
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-		{
-			sf::Time elapsed;
-			elapsed = clock_move_Hor.getElapsedTime();
-
-			if (elapsed.asMilliseconds() >= REACT_TIME) // only one move per REACT_TIME
+			// horizontal move - right
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 			{
-				current_piece->moveLeft();
+				sf::Time elapsed;
+				elapsed = clock_move_Hor.getElapsedTime();
 
-				if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision with side edges
+				if (elapsed.asMilliseconds() >= REACT_TIME) // only one move per REACT_TIME
 				{
-					current_piece->moveRight(); // if collision - return to base state (before player move action)
-				}
-				
+					current_piece->moveRight();
 
-				for (auto bound : block_bounds) // check collision  with other pieces on board
-				{
-					if (current_piece->check_piece_collision(bound)) // check collision
+					if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision  with side edges
 					{
-						current_piece->moveRight();		// if collision - return to base state (before player move action)
-						break; // break "for" at fist collision
+						current_piece->moveLeft(); // if collision - return to base state (before player move action)
 					}
+
+
+					for (auto bound : block_bounds) // check collision with other pieces on board
+					{
+						if (current_piece->check_piece_collision(bound)) // check collision
+						{
+							current_piece->moveLeft();	// if collision - return to base state (before player move action)
+							break; // break "for" at fist collision
+						}
+					}
+
+					clock_move_Hor.restart();
 				}
-
-				clock_move_Hor.restart();
 			}
-		}
 
-		// vertical move - down
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-		{
-			sf::Time elapsed;
-			elapsed = clock_move_Ver.getElapsedTime();
-
-			if (elapsed.asMilliseconds() >= 25)
+			// horizontal move - left
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 			{
-				current_piece->moveDown(); 
-				if (current_piece->check_piece_collision(bottom_bound)) // check collision with bottom bound
+				sf::Time elapsed;
+				elapsed = clock_move_Hor.getElapsedTime();
+
+				if (elapsed.asMilliseconds() >= REACT_TIME) // only one move per REACT_TIME
 				{
-					current_piece->moveUp();															// if collision - return to base state (before player move action)
+					current_piece->moveLeft();
+
+					if (current_piece->check_piece_collision(right_bound) || current_piece->check_piece_collision(left_bound)) // check collision with side edges
+					{
+						current_piece->moveRight(); // if collision - return to base state (before player move action)
+					}
+
+
+					for (auto bound : block_bounds) // check collision  with other pieces on board
+					{
+						if (current_piece->check_piece_collision(bound)) // check collision
+						{
+							current_piece->moveRight();		// if collision - return to base state (before player move action)
+							break; // break "for" at fist collision
+						}
+					}
+
+					clock_move_Hor.restart();
+				}
+			}
+
+			// vertical move - down (player)
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+			{
+				sf::Time elapsed;
+				elapsed = clock_move_Ver.getElapsedTime();
+
+				if (elapsed.asMilliseconds() >= 25)
+				{
+					current_piece->moveDown();
+					if (current_piece->check_piece_collision(bottom_bound)) // check collision with bottom bound
+					{
+						current_piece->moveUp();															// if collision - return to base state (before player move action)
+						std::vector<sf::Vector2f> block_coords = current_piece->get_global_block_coords();	// get global coords of every block in piece
+						for (auto single_block_coords : block_coords)										// push blocks into board
+						{
+							game_board.push_block(single_block_coords, Block(block_texture, current_piece->get_color()));
+						}
+						int lines_cleared = game_board.line_clear(); // clear full lines (rows)
+						if (lines_cleared) // add points (game score)
+						{
+							update_score(lines_cleared, points, scoring);
+						}
+						block_bounds = game_board.get_block_bounds(); // update block bounds (blocks on board)
+						current_piece = random_piece(); // new random piece
+					}
+
+					for (auto bound : block_bounds) // check collision  with other pieces
+					{
+						if (current_piece->check_piece_collision(bound)) // check collision
+						{
+							current_piece->moveUp();															// if collision - return to base state (before player move action)
+							std::vector<sf::Vector2f> block_coords = current_piece->get_global_block_coords();	// get global coords of every block in piece
+							for (auto single_block_coords : block_coords)										// push blocks into board
+							{
+								game_board.push_block(single_block_coords, Block(block_texture, current_piece->get_color()));
+							}
+							int lines_cleared = game_board.line_clear(); // clear full lines (rows)
+							if (lines_cleared) // add points (game score)
+							{
+								update_score(lines_cleared, points, scoring);
+							}
+							block_bounds = game_board.get_block_bounds();// update block bounds (blocks on board)
+							current_piece = random_piece(); // new random piece
+							break; // break "for" at fist collision
+						}
+					}
+
+					clock_move_Ver.restart();
+				}
+			}
+
+			// vertical move - down (game)
+
+			sf::Time elapsed = game_time.getElapsedTime();
+			if (static_cast<int>(elapsed.asMilliseconds()) > vertical_move_time)
+			{
+				current_piece->moveDown();
+				if (current_piece->check_piece_collision(bottom_bound)) // check collision
+				{
+					current_piece->moveUp();															// if collision - return to previous state
 					std::vector<sf::Vector2f> block_coords = current_piece->get_global_block_coords();	// get global coords of every block in piece
 					for (auto single_block_coords : block_coords)										// push blocks into board
 					{
 						game_board.push_block(single_block_coords, Block(block_texture, current_piece->get_color()));
 					}
-					game_board.line_clear(); // clear full lines (rows)
+					int lines_cleared = game_board.line_clear(); // clear full lines (rows)
+					if (lines_cleared) // add points (game score)
+					{
+						update_score(lines_cleared, points, scoring);
+					}
 					block_bounds = game_board.get_block_bounds(); // update block bounds (blocks on board)
 					current_piece = random_piece(); // new random piece
 				}
@@ -247,61 +338,56 @@ int main()
 						{
 							game_board.push_block(single_block_coords, Block(block_texture, current_piece->get_color()));
 						}
-						game_board.line_clear(); // clear full lines (rows) 
-						block_bounds = game_board.get_block_bounds();// update block bounds (blocks on board)
+						int lines_cleared = game_board.line_clear(); // clear full lines (rows)
+						if (lines_cleared) // add points (game score)
+						{
+							update_score(lines_cleared, points, scoring);
+						}
+						block_bounds = game_board.get_block_bounds(); // update block bounds (blocks on board)
 						current_piece = random_piece(); // new random piece
 						break; // break "for" at fist collision
 					}
 				}
-				
-
-				clock_move_Ver.restart();
+				game_time.restart();
 			}
+
+			//speed up vertical move -----------------------------------------------------------------------------
+			elapsed = game_speed.getElapsedTime();
+			if (static_cast<int>(elapsed.asSeconds()) > SPEEDING_TIME)
+			{
+				vertical_move_time -= VERTICAL_MOVE_DIFF;
+				game_speed.restart();
+			}
+
+
+			// --------------------------------------------------------------------------------------
 		}
-
-		// moveDown - by game itself ------------------------------------------------------------
-
-		sf::Time elapsed = game_time.getElapsedTime();
-		if (static_cast<int>(elapsed.asMilliseconds()) > vertical_move_time)
+		else // if game is over
 		{
-			current_piece->moveDown();
-			if (current_piece->check_piece_collision(bottom_bound)) // check collision
-			{
-				current_piece->moveUp();															// if collision - return to previous state
-				std::vector<sf::Vector2f> block_coords = current_piece->get_global_block_coords();	// get global coords of every block in piece
-				for (auto single_block_coords : block_coords)										// push blocks into board
-				{
-					game_board.push_block(single_block_coords, Block(block_texture, current_piece->get_color()));
-				}
-				game_board.line_clear(); // clear full lines (rows)
-				block_bounds = game_board.get_block_bounds(); // update block bounds (blocks on board)
-				current_piece = random_piece(); // new random piece
-			}
+			game_window.clear(sf::Color::Black);
 
-			for (auto bound : block_bounds) // check collision  with other pieces
-			{
-				if (current_piece->check_piece_collision(bound)) // check collision
-				{
-					current_piece->moveUp();															// if collision - return to base state (before player move action)
-					std::vector<sf::Vector2f> block_coords = current_piece->get_global_block_coords();	// get global coords of every block in piece
-					for (auto single_block_coords : block_coords)										// push blocks into board
-					{
-						game_board.push_block(single_block_coords, Block(block_texture, current_piece->get_color()));
-					}
-					game_board.line_clear(); // clear full lines (rows)
-					block_bounds = game_board.get_block_bounds(); // update block bounds (blocks on board)
-					current_piece = random_piece(); // new random piece
-					break; // break "for" at fist collision
-				}
-			}
+			sf::Text game_over;
+			game_over.setFont(font);
+			game_over.setString("GAME OVER");
+			game_over.setCharacterSize(50);
+			game_over.setFillColor(sf::Color::Red);
+			game_over.setPosition(80, 75);
 
-			game_time.restart();
+			score_text.setPosition(230, 155);	// show final score
+			scoring.setPosition(230, 180);		// show final score
+
+			sf::RectangleShape background(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGTH));
+
+			background.setFillColor(sf::Color(0,0,0,190)); // last number - background transparency
+
+			game_window.draw(game_board);
+			game_window.draw(background);
+			game_window.draw(game_over);
+			game_window.draw(scoring);
+			game_window.draw(score_text);
+
 		}
 
-
-		// --------------------------------------------------------------------------------------
-
-		game_window.draw(*current_piece);
 		game_window.display();
 	}
 }
@@ -357,8 +443,19 @@ std::unique_ptr<Piece> random_piece()
 
 }
 
+// --------------------------------------------------------------------------------
+
 void removeConsoleWindow()
 {
 	ShowWindow(FindWindowA("ConsoleWindowClass", NULL), false);
 	FreeConsole();
+}
+
+// --------------------------------------------------------------------------------
+
+void update_score(int lines_cleared, int & points, sf::Text &scoring)
+{
+	points += lines_cleared * POINTS_FOR_CLEAR;
+	scoring.setString(std::to_string(points));
+
 }
