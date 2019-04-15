@@ -50,8 +50,11 @@ int main()
 		std::cerr << "Falied to load texture";
 	}
 
-
 	std::unique_ptr<Piece> current_piece = random_piece(); // first random block
+	std::unique_ptr<Piece> next_piece = random_piece(); // second random block
+	std::unique_ptr<Piece> next_piece_picture_obj{ new Piece{*next_piece} }; // copy of next piece (for displaying on right side)
+	(*next_piece_picture_obj).setPosition(sf::Vector2f(420,290)); // set position on right side of screen
+
 	Board game_board;
 	std::vector<sf::FloatRect> block_bounds; // vector for bounds of blocks on board
 	
@@ -79,7 +82,7 @@ int main()
 	sf::FloatRect left_bound = left_edge.getGlobalBounds();
 	sf::FloatRect bottom_bound = bottom_edge.getGlobalBounds();
 
-	// Right side of window - scoring -----------------------------------------------------
+	// Right side of window - scoring and next block -----------------------------------------------------
 
 	sf::Font font;
 	if (!font.loadFromFile("neuropol.ttf"))
@@ -99,7 +102,10 @@ int main()
 	score_text.setString("Score:");
 	score_text.setPosition(350, 25);
 
-
+	sf::Text next_text; // "Next block:"
+	next_text = scoring;
+	next_text.setString("Next block:");
+	next_text.setPosition(350, 190);
 
 	// game loop ----------------------------------------------------------------------
 
@@ -125,7 +131,9 @@ int main()
 			game_window.draw(game_board);
 			game_window.draw(scoring);
 			game_window.draw(score_text);
+			game_window.draw(next_text);
 			game_window.draw(*current_piece);
+			game_window.draw(*next_piece_picture_obj);
 
 
 		// player actions ----------------------------------------------------------------------
@@ -217,7 +225,7 @@ int main()
 						if (current_piece->check_piece_collision(bound)) // check collision
 						{
 							current_piece->moveLeft();	// if collision - return to base state (before player move action)
-							break; // break "for" at fist collision
+							break; // break "for" at first collision
 						}
 					}
 
@@ -277,7 +285,10 @@ int main()
 							update_score(lines_cleared, points, scoring);
 						}
 						block_bounds = game_board.get_block_bounds(); // update block bounds (blocks on board)
-						current_piece = random_piece(); // new random piece
+						current_piece = std::move(next_piece); // change next_piece to current_piece
+						next_piece = random_piece(); // new random piece
+						next_piece_picture_obj = std::unique_ptr<Piece>{ new Piece{*next_piece} }; // copy of next piece (for displaying on right side)
+						(*next_piece_picture_obj).setPosition(sf::Vector2f(420, 290)); // set position on right side of screen
 					}
 
 					for (auto bound : block_bounds) // check collision  with other pieces
@@ -296,7 +307,10 @@ int main()
 								update_score(lines_cleared, points, scoring);
 							}
 							block_bounds = game_board.get_block_bounds();// update block bounds (blocks on board)
-							current_piece = random_piece(); // new random piece
+							current_piece = std::move(next_piece); // change next_piece to current_piece
+							next_piece = random_piece(); // new random piece
+							next_piece_picture_obj = std::unique_ptr<Piece>{ new Piece{*next_piece} }; // copy of next piece (for displaying on right side)
+							(*next_piece_picture_obj).setPosition(sf::Vector2f(420, 290)); // set position on right side of screen
 							break; // break "for" at fist collision
 						}
 					}
@@ -325,7 +339,10 @@ int main()
 						update_score(lines_cleared, points, scoring);
 					}
 					block_bounds = game_board.get_block_bounds(); // update block bounds (blocks on board)
-					current_piece = random_piece(); // new random piece
+					current_piece = std::move(next_piece); // change next_piece to current_piece
+					next_piece = random_piece(); // new random piece
+					next_piece_picture_obj = std::unique_ptr<Piece>{ new Piece{*next_piece} }; // copy of next piece (for displaying on right side)
+					(*next_piece_picture_obj).setPosition(sf::Vector2f(420, 290)); // set position on right side of screen
 				}
 
 				for (auto bound : block_bounds) // check collision  with other pieces
@@ -344,7 +361,10 @@ int main()
 							update_score(lines_cleared, points, scoring);
 						}
 						block_bounds = game_board.get_block_bounds(); // update block bounds (blocks on board)
-						current_piece = random_piece(); // new random piece
+						current_piece = std::move(next_piece); // change next_piece to current_piece
+						next_piece = random_piece(); // new random piece
+						next_piece_picture_obj = std::unique_ptr<Piece>{ new Piece{*next_piece} }; // copy of next piece (for displaying on right side)
+						(*next_piece_picture_obj).setPosition(sf::Vector2f(420, 290)); // set position on right side of screen
 						break; // break "for" at fist collision
 					}
 				}
